@@ -7,6 +7,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import make_pipeline
+from sklearn.metrics import confusion_matrix
 
 
 
@@ -67,6 +68,32 @@ pipe_lr = make_pipeline(StandardScaler(),PCA(n_components = 2), LogisticRegressi
 pipe_lr.fit(X_train, Y_train)
 Y_pred = pipe_lr.predict(X_test)
 print(f'Test Accuracy:{pipe_lr.score(X_test, Y_test):.03f}')
+
+
+''''
+
+4 - Implementing the confusion matrix
+
+'''
+
+confmat = confusion_matrix(y_true = Y_test, y_pred = Y_pred)
+print(30*"---")
+print("Output Confusion Matrix")
+print(confmat)
+print(30*"---")
+
+
+fix, ax  = plt.subplots(figsize  = (2.5, 2.5))
+ax.matshow(confmat, cmap = plt.cm.Blues, alpha = 0.3)
+for i in range(confmat.shape[0]):
+    for j in range(confmat.shape[1]):
+        ax.text(x = j, y = i, s = confmat[i, j], va = 'center', ha = 'center')
+
+plt.xlabel('prediction')
+plt.ylabel('True label')
+plt.show()
+
+
 
 
 
