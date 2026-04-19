@@ -3,6 +3,11 @@ import numpy as np
 from matplotlib import pylab as plt
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import make_pipeline
+
 
 
 '''
@@ -37,7 +42,6 @@ X = df.loc[:, 2:].values
 Y = df.loc[:, 1 ].values
 le = LabelEncoder()
 Y = le.fit_transform(Y)
-
 df[1] = df[1].map({'M':1, 'B':0})
 
 print(30*"---")
@@ -50,14 +54,22 @@ dividethe dataset in to a separated training dataset (80 percent of the data)
 and a separated test dataser (20 percent of the data)
 '''
 
-X_train, Y_train, X_test, Y_test = train_test_split(X ,Y, test_size = 0.20, stratify= Y, random_state = 1)
+X_train,  X_test, Y_train, Y_test = train_test_split(X ,Y, test_size = 0.20, stratify = Y, random_state = 1)
 
-print(30*"---")
-print("Undertanting the out put of 'train_test_split'\n")
-print("X_test\n")
-print(f"Type: {type(X_train)}")
-print(f"{X_train}")
-print(30*"---")
+#print(30*"---")
+#print("Undertanting the out put of 'train_test_split'\n")
+#print("X_test\n")
+#print(f"Type: {type(X_train)}")
+#print(f"{X_train}")
+#print(30*"---")
+
+pipe_lr = make_pipeline(StandardScaler(),PCA(n_components = 2), LogisticRegression(random_state = 1))
+pipe_lr.fit(X_train, Y_train)
+Y_pred = pipe_lr.predict(X_test)
+print(f'Test Accuracy:{pipe_lr.score(X_test, Y_test):.03f}')
+
+
+
 
 
 
