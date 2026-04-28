@@ -3,7 +3,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from sklearn import datasets
 from sklearn.model_selection import train_test_split
-from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report
 from matplotlib.colors import ListedColormap
 
@@ -52,28 +52,22 @@ Y = iris.target
 
 X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size = 0.3, random_state = 1, stratify = Y)
 
-tree = DecisionTreeClassifier(criterion = 'gini', max_depth = 4, random_state = 1)
-tree.fit(X_train, Y_train)
+forest  = RandomForestClassifier(criterion = 'gini', n_estimators = 35, random_state = 1, n_jobs = 2)
+forest.fit(X_train, Y_train)
 
-test_predictions = tree.predict(X_test)
+test_predictions = forest.predict(X_test)
 
 X_combined = np.vstack((X_train, X_test))
 Y_combined = np.hstack((Y_train, Y_test))
-plot_decision_regios(X= X_combined,Y = Y_combined, classfier = tree, test_idx = range(105,150))
+plot_decision_regios(X= X_combined,Y = Y_combined, classfier = forest, test_idx = range(105,150))
+plt.title('Randon Forest')
 plt.xlabel(f'Petal Length [cm]')
 plt.ylabel(f'Petal width [cm]')
 plt.legend(loc = 'upper left')
-plt.show()
-
-plt.figure(figsize=(10, 7), constrained_layout = True)
-plot_tree(tree, filled=True, feature_names=['Petal length', 'Petal width'], class_names=['Setosa', 'Versicolor', 'Virginica'])
-plt.show()
+#plt.show()
 
 # Model Evaluation: Generating predictions and computing 
 print(30*"---"+"\n")
-print("Classification Report - TEST SET (VSetosa, Versicolor & Virginica):")
+print("Classification Report - TEST SET (Setosa, Versicolor & Virginica):")
 print(classification_report(Y_test, test_predictions, target_names=['Setosa', 'Versicolor', 'Virginica']))
 print(30*"---"+"\n")
-
-
-
