@@ -1,0 +1,16 @@
+# Python caches
+__pycache__/
+*.py[cod]
+
+# macOS system files
+.DS_Store
+
+# Virtual Environments
+venv/
+.venv/
+
+# Heavy Datasets (exemplo para o Wine e arquivos .mat)
+*.data
+*.mat
+*.csv
+/assignments/assignment_01_wine_classification/wine_data_set/
