@@ -96,7 +96,8 @@ print(30*"---")
 
 disp.plot(cmap=plt.cm.Blues)
 plt.title("Confusion Matrix: Wine Classification")
-plt.savefig("result/confusion_catrix_wine_classification.png")
+plt.savefig("result/confusion_catrix_wine_classification_perceptron.png")
 plt.show()
+
 
 
