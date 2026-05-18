@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-
+from sklearn.decomposition import PCA, KernelPCA
 # ============================================================
 # 1. DATASET GENERATION
 # ============================================================
@@ -171,13 +171,9 @@ plt.tight_layout()
 plt.savefig("result/tridimensional_scatter_plot_spatial_class_distribution.png")
 plt.show()
 
-# ------------------------------------------
-# Passo b) LDA (Linear Discriminant Analysis)
-# ------------------------------------------
-# Instancie o modelo LDA.
-# Ajuste o LDA aos dados e projete-os no subespaço bidimensional.
-# Plote os dados projetados e comente os resultados obtidos (como as classes se separaram).
-
+# ============================================================
+# 3. LINEAR DISCRIMINANT ANALYSIS (LDA)
+# ============================================================
 
 
 # Isolate features (X) and targets (y) using standard Pandas column selection
@@ -214,41 +210,155 @@ plt.savefig("result/lda_onedimensional_projection.png")
 plt.show()
 
 
-# ==========================================
-# 2. GERAÇÃO DO DATASET 2 (Espiral 3D)
-# ==========================================
+# ============================================================
+# 2. DATASET GENERATION 2 (3D Spiral Extrusion)
+# ============================================================
 
-# Parâmetros definidos no enunciado
 a = 0.1
 theta_init = 0.5
 theta_fin = 2.05 * np.pi
 theta_step = 0.2
 
-# Crie os valores de theta usando a função np.arange
-# Para cada valor de theta, calcule r, x e y
-# Crie a estrutura z variando de -1 até 1 com passo 0.2 (11 pontos)
-# Combine (x, y, z) para formar os pontos da espiral
+theta = np.arange(theta_init, theta_fin, theta_step)
+z_space = np.arange(-1, 1.1, 0.2)  
 
-# ------------------------------------------
-# Plotagem da Espiral 3D
-# ------------------------------------------
-# Plote a espiral tridimensional com as especificações do enunciado:
-# - Pontos da mesma espiral 2-dimensional com o mesmo marcador.
-# - Grupos de pontos (x, y fixos) com a mesma cor ao longo de z.
+r = a * theta
+x = r * np.cos(theta)
+y = r * np.sin(theta)
 
-# ------------------------------------------
-# Passo a) PCA Linear
-# ------------------------------------------
-# Instancie o PCA com 2 componentes principais.
-# Ajuste e transforme o conjunto de dados da espiral.
-# Plote o resultado da projeção 2D.
+"""
+STUDY NOTE ON 3D SPIRAL EXTRUSION:
+The 3D spiral dataset is not a continuous helix (spring shape). Instead, it represents 
+a 2D Archimedean spiral extruded along the Z-axis. 
+Every fixed (x, y) coordinate pair forms a vertical linear group spanning across all Z values.
+To fulfill the requirements, points on the same 2D plane share the same marker, 
+and vertical groups (fixed x, y) share the same color.
+"""
 
-# ------------------------------------------
-# Passo b) Kernel PCA
-# ------------------------------------------
-# Instancie o KernelPCA com dimensão m=2.
-# Teste diferentes parâmetros de kernel (como o valor de gamma).
-# Plote os resultados e compare com o PCA linear.
+print("\n" + 30*"---")
+print("DATASET VISUALIZATION - SPIRAL GENERATION")
+print(30*"---")
+print(f"Number of spiral points (theta): {len(theta)}")
+print(f"Number of vertical levels (z): {len(z_space)}")
+
+# ------------------------------------------------------------
+# 3D Spiral Plotting
+# ------------------------------------------------------------
+fig = plt.figure(figsize=(10, 8))
+ax = fig.add_subplot(111, projection='3d')
+colors = plt.cm.viridis(np.linspace(0, 1, len(theta)))
+spiral_point = []
+
+for i in range(len(theta)):
+
+    x_line = np.full_like(z_space, x[i])
+    y_line = np.full_like(z_space, y[i])
+    ax.scatter3D(x_line, y_line, z_space, color=colors[i], marker='o', s=30)    
+    ax.plot3D(x_line, y_line, z_space, color=colors[i], linestyle=':', alpha=0.4)
+
+    for x_val, y_val, z_val in zip(x_line, y_line, z_space):
+        spiral_point.append([x_val, y_val, z_val])
+
+
+X_spiral = np.array(spiral_point)
+
+
+ax.set_xlabel('X Axis')
+ax.set_ylabel('Y Axis')
+ax.set_zlabel('Z Axis')
+ax.set_title('3D Extrusion Plot: Archimedean Spiral Sheet')
+
+ax.view_init(elev=20, azim=60)
+
+plt.tight_layout()
+plt.savefig("result/tridimensional_spiral_extrusion_plot.png")
+plt.show()
+
+# ============================================================
+# 3. LINEAR PRINCIPAL COMPONENT ANALYSIS (PCA)
+# ============================================================
+
+"""
+STUDY NOTE ON LINEAR PCA:
+Linear PCA identifies the orthogonal axes (principal components) that maximize 
+the variance of the data. For this extruded 3D spiral, the first two components 
+are expected to capture the planar structure of the Archimedean spiral, 
+effectively flattening the vertical Z-axis variance.
+"""
+
+pca  = PCA(n_components = 2)
+
+X_pca = pca.fit_transform(X_spiral)
+
+print("\n" + 30*"---")
+print("LINEAR PCA TRANSFORMATION")
+print(30*"---")
+print(f"Original 3D shape: {X_spiral.shape}")
+print(f"Reduced 2D PCA shape: {X_pca.shape}")
+
+# ------------------------------------------------------------
+# Plotting the 2D PCA Projection
+# ------------------------------------------------------------
+plt.figure(figsize= (8,6))
+plt.scatter(X_pca[:,0], X_pca[:,1],color = 'teal', alpha = 0.6, marker = 'o')
+
+plt.title('Linear PCA: 2D Projection of 3D Spiral')
+plt.xlabel('Principal Component 1')
+plt.ylabel('Principal Component 2')
+plt.grid(True, linestyle='--', alpha=0.5)
+
+plt.tight_layout()
+plt.savefig("result/linear_pca_2d_projection.png")
+plt.show()
+
+# ============================================================
+# 4. KERNEL PRINCIPAL COMPONENT ANALYSIS (KERNEL PCA)
+# ============================================================
+
+"""
+STUDY NOTE ON KERNEL PCA:
+Unlike Linear PCA, Kernel PCA maps the non-linear structure of the 3D spiral 
+into a higher-dimensional feature space using the 'Kernel Trick'. 
+By applying a Gaussian (RBF) kernel, the model attempts to unfold the non-linear 
+manifold. The parameter 'gamma' dictates the radius of influence of the kernel:
+- Low gamma values behave similarly to Linear PCA.
+- High gamma values may cause overfitting, scattering the geometric structure.
+- An optimal gamma will successfully linearize or cluster the spiral pattern.
+"""
+
+gamma_values = [0.1, 1, 5, 10]
+
+for g in gamma_values:
+    
+    kpca = KernelPCA(kernel ='rbf', gamma = g, n_components = 2)
+    
+    X_kpca = kpca.fit_transform(X_spiral)
+    
+    print("\n" + 30*"---")
+    print(f"KERNEL PCA TRANSFORMATION - GAMMA: {g}")
+    print(30*"---")
+    print(f"Reduced 2D Kernel PCA shape: {X_kpca.shape}")
+    
+    # --------------------------------------------------------
+    # Plotting the 2D Kernel PCA Projection
+    # --------------------------------------------------------
+    
+    plt.figure(figsize=(8, 6))
+    
+
+    plt.scatter(X_kpca[:,0], X_kpca[:,1],color = 'teal', alpha = 0.6, marker = 'o')
+    
+    
+    plt.title(f'Kernel PCA: 2D Projection (RBF Kernel, Gamma = {g})')
+    plt.xlabel('Kernel Component 1')
+    plt.ylabel('Kernel Component 2')
+    plt.grid(True, linestyle='--', alpha=0.5)
+    
+    plt.tight_layout()
+    
+    plt.savefig(f"result/kernel_pca_gamma_{g}.png")
+    plt.show()
+
 
 
 
