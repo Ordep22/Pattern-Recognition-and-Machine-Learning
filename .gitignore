@@ -13,4 +13,6 @@ venv/
 *.data
 *.mat
 *.csv
+*.txt
+*.ini
 /assignments/assignment_01_wine_classification/wine_data_set/
